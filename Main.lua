@@ -1,88 +1,73 @@
--- dedulia Hub | Mobile + Delta friendly
+-- dedulia Hub | No Key | PC + Mobile
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
 local Camera = workspace.CurrentCamera
+local LP = Players.LocalPlayer
 
--- UI SCALE (под телефон)
-local gui = Instance.new("ScreenGui")
+-- ================= GUI =================
+local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.Name = "deduliaHub"
-gui.Parent = game.CoreGui
 
-local scale = Instance.new("UIScale", gui)
-scale.Scale = UserInputService.TouchEnabled and 1.15 or 1
+-- Floating button
+local float = Instance.new("TextButton", gui)
+float.Size = UDim2.new(0,55,0,55)
+float.Position = UDim2.new(1,-70,0.5,-30)
+float.Text = "D"
+float.Font = Enum.Font.GothamBold
+float.TextSize = 22
+float.BackgroundColor3 = Color3.fromRGB(60,60,60)
+float.TextColor3 = Color3.new(1,1,1)
+float.Active = true
+float.Draggable = true
+Instance.new("UICorner", float).CornerRadius = UDim.new(1,0)
 
--- MAIN FRAME
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 320, 0, 300)
-frame.Position = UDim2.new(0.5, -160, 0.55, -150)
-frame.BackgroundColor3 = Color3.fromRGB(22,22,22)
-frame.Active = true
-frame.Draggable = true
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,16)
+-- Main hub
+local hub = Instance.new("Frame", gui)
+hub.Size = UDim2.new(0,340,0,320)
+hub.Position = UDim2.new(0.5,-170,0.5,-160)
+hub.BackgroundColor3 = Color3.fromRGB(22,22,22)
+hub.Visible = false
+hub.Active = true
+hub.Draggable = true
+Instance.new("UICorner", hub).CornerRadius = UDim.new(0,18)
 
--- TITLE
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1,0,0,45)
-title.Text = "dedulia Hub (Mobile)"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 22
-title.TextColor3 = Color3.new(1,1,1)
-title.BackgroundTransparency = 1
-
--- MINIMIZE BUTTON
-local mini = Instance.new("TextButton", frame)
-mini.Size = UDim2.new(0,40,0,40)
-mini.Position = UDim2.new(1,-45,0,5)
-mini.Text = "—"
-mini.Font = Enum.Font.GothamBold
-mini.TextSize = 22
-mini.BackgroundColor3 = Color3.fromRGB(40,40,40)
-mini.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", mini).CornerRadius = UDim.new(1,0)
-
-local minimized = false
-mini.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    frame.Size = minimized and UDim2.new(0, 200, 0, 45) or UDim2.new(0, 320, 0, 300)
+float.MouseButton1Click:Connect(function()
+    hub.Visible = not hub.Visible
 end)
 
--- BUTTON CREATOR (БОЛЬШИЕ КНОПКИ)
-local function makeButton(text, y)
-    local b = Instance.new("TextButton", frame)
-    b.Size = UDim2.new(0, 260, 0, 50)
-    b.Position = UDim2.new(0.5, -130, 0, y)
+-- Button creator
+local function btn(text,y)
+    local b = Instance.new("TextButton", hub)
+    b.Size = UDim2.new(0,260,0,45)
+    b.Position = UDim2.new(0.5,-130,0,y)
     b.Text = text
-    b.Font = Enum.Font.Gotham
-    b.TextSize = 18
-    b.TextColor3 = Color3.new(1,1,1)
     b.BackgroundColor3 = Color3.fromRGB(45,45,45)
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0,14)
+    b.TextColor3 = Color3.new(1,1,1)
+    b.Font = Enum.Font.Gotham
+    b.TextSize = 17
+    Instance.new("UICorner", b)
     return b
 end
 
--- SPEED
+-- ================= SPEED =================
 local speedOn = false
-local speedBtn = makeButton("Speed: OFF", 60)
-
-speedBtn.MouseButton1Click:Connect(function()
+btn("Speed",50).MouseButton1Click:Connect(function()
     speedOn = not speedOn
-    speedBtn.Text = speedOn and "Speed: ON" or "Speed: OFF"
-    LocalPlayer.Character.Humanoid.WalkSpeed = speedOn and 45 or 16
+    if LP.Character and LP.Character:FindFirstChild("Humanoid") then
+        LP.Character.Humanoid.WalkSpeed = speedOn and 45 or 16
+    end
 end)
 
--- FLY (MOBILE)
+-- ================= FLY (PC + MOBILE) =================
 local flyOn = false
-local flyBtn = makeButton("Fly: OFF", 125)
 local bv, bg
-
-flyBtn.MouseButton1Click:Connect(function()
+btn("Fly",105).MouseButton1Click:Connect(function()
     flyOn = not flyOn
-    flyBtn.Text = flyOn and "Fly: ON" or "Fly: OFF"
-
-    local hrp = LocalPlayer.Character.HumanoidRootPart
+    local char = LP.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = char.HumanoidRootPart
 
     if flyOn then
         bv = Instance.new("BodyVelocity", hrp)
@@ -91,10 +76,24 @@ flyBtn.MouseButton1Click:Connect(function()
         bg.MaxTorque = Vector3.new(1e9,1e9,1e9)
 
         RunService.RenderStepped:Connect(function()
-            if flyOn then
-                bv.Velocity = Camera.CFrame.LookVector * 50
-                bg.CFrame = Camera.CFrame
+            if not flyOn then return end
+            local dir = Vector3.zero
+
+            -- PC controls
+            if UIS:IsKeyDown(Enum.KeyCode.W) then dir += Camera.CFrame.LookVector end
+            if UIS:IsKeyDown(Enum.KeyCode.S) then dir -= Camera.CFrame.LookVector end
+            if UIS:IsKeyDown(Enum.KeyCode.A) then dir -= Camera.CFrame.RightVector end
+            if UIS:IsKeyDown(Enum.KeyCode.D) then dir += Camera.CFrame.RightVector end
+            if UIS:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.new(0,1,0) end
+            if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.new(0,1,0) end
+
+            -- Mobile fallback (по направлению камеры)
+            if dir.Magnitude == 0 then
+                dir = Camera.CFrame.LookVector
             end
+
+            bv.Velocity = dir * 60
+            bg.CFrame = Camera.CFrame
         end)
     else
         if bv then bv:Destroy() end
@@ -102,25 +101,24 @@ flyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ESP
-local espOn = false
-local espBtn = makeButton("ESP: OFF", 190)
+-- ================= AIMBOT (SAFE) =================
+local aimbotOn = false
+btn("Aimbot",160).MouseButton1Click:Connect(function()
+    aimbotOn = not aimbotOn
+end)
 
-espBtn.MouseButton1Click:Connect(function()
-    espOn = not espOn
-    espBtn.Text = espOn and "ESP: ON" or "ESP: OFF"
-
+RunService.RenderStepped:Connect(function()
+    if not aimbotOn then return end
+    local closest, dist = nil, math.huge
     for _,p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character then
-            if espOn then
-                local h = Instance.new("Highlight", p.Character)
-                h.FillColor = Color3.fromRGB(255,0,0)
-                h.OutlineColor = Color3.new(1,1,1)
-            else
-                for _,v in pairs(p.Character:GetChildren()) do
-                    if v:IsA("Highlight") then v:Destroy() end
-                end
+        if p ~= LP and p.Character and p.Character:FindFirstChild("Head") then
+            local d = (Camera.CFrame.Position - p.Character.Head.Position).Magnitudeif d < dist then
+                dist = d
+                closest = p
             end
         end
+    end
+    if closest and closest.Character and closest.Character:FindFirstChild("Head") then
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, closest.Character.Head.Position)
     end
 end)
