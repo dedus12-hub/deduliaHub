@@ -1,57 +1,81 @@
--- dedulia Hub
--- Simple & Working
+-- dedulia Hub | Mobile + Delta friendly
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- GUI
-local gui = Instance.new("ScreenGui", game.CoreGui)
+-- UI SCALE (под телефон)
+local gui = Instance.new("ScreenGui")
 gui.Name = "deduliaHub"
+gui.Parent = game.CoreGui
 
+local scale = Instance.new("UIScale", gui)
+scale.Scale = UserInputService.TouchEnabled and 1.15 or 1
+
+-- MAIN FRAME
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 300, 0, 220)
-frame.Position = UDim2.new(0.5, -150, 0.5, -110)
-frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+frame.Size = UDim2.new(0, 320, 0, 300)
+frame.Position = UDim2.new(0.5, -160, 0.55, -150)
+frame.BackgroundColor3 = Color3.fromRGB(22,22,22)
 frame.Active = true
 frame.Draggable = true
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,16)
 
+-- TITLE
 local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1,0,0,40)
-title.Text = "dedulia Hub"
+title.Size = UDim2.new(1,0,0,45)
+title.Text = "dedulia Hub (Mobile)"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 22
 title.TextColor3 = Color3.new(1,1,1)
 title.BackgroundTransparency = 1
-title.Font = Enum.Font.GothamBold
-title.TextSize = 20
 
-local function button(text, y)
+-- MINIMIZE BUTTON
+local mini = Instance.new("TextButton", frame)
+mini.Size = UDim2.new(0,40,0,40)
+mini.Position = UDim2.new(1,-45,0,5)
+mini.Text = "—"
+mini.Font = Enum.Font.GothamBold
+mini.TextSize = 22
+mini.BackgroundColor3 = Color3.fromRGB(40,40,40)
+mini.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", mini).CornerRadius = UDim.new(1,0)
+
+local minimized = false
+mini.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    frame.Size = minimized and UDim2.new(0, 200, 0, 45) or UDim2.new(0, 320, 0, 300)
+end)
+
+-- BUTTON CREATOR (БОЛЬШИЕ КНОПКИ)
+local function makeButton(text, y)
     local b = Instance.new("TextButton", frame)
-    b.Size = UDim2.new(0, 240, 0, 40)
-    b.Position = UDim2.new(0.5, -120, 0, y)
+    b.Size = UDim2.new(0, 260, 0, 50)
+    b.Position = UDim2.new(0.5, -130, 0, y)
     b.Text = text
     b.Font = Enum.Font.Gotham
-    b.TextSize = 15
+    b.TextSize = 18
     b.TextColor3 = Color3.new(1,1,1)
-    b.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0,10)
+    b.BackgroundColor3 = Color3.fromRGB(45,45,45)
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0,14)
     return b
 end
 
 -- SPEED
 local speedOn = false
-local speedBtn = button("Speed: OFF", 50)
+local speedBtn = makeButton("Speed: OFF", 60)
 
 speedBtn.MouseButton1Click:Connect(function()
     speedOn = not speedOn
     speedBtn.Text = speedOn and "Speed: ON" or "Speed: OFF"
-    LocalPlayer.Character.Humanoid.WalkSpeed = speedOn and 50 or 16
+    LocalPlayer.Character.Humanoid.WalkSpeed = speedOn and 45 or 16
 end)
 
--- FLY
+-- FLY (MOBILE)
 local flyOn = false
-local flyBtn = button("Fly: OFF", 100)
+local flyBtn = makeButton("Fly: OFF", 125)
 local bv, bg
 
 flyBtn.MouseButton1Click:Connect(function()
@@ -68,7 +92,7 @@ flyBtn.MouseButton1Click:Connect(function()
 
         RunService.RenderStepped:Connect(function()
             if flyOn then
-                bv.Velocity = Camera.CFrame.LookVector * 60
+                bv.Velocity = Camera.CFrame.LookVector * 50
                 bg.CFrame = Camera.CFrame
             end
         end)
@@ -80,19 +104,20 @@ end)
 
 -- ESP
 local espOn = false
-local espBtn = button("ESP: OFF", 150)
+local espBtn = makeButton("ESP: OFF", 190)
 
 espBtn.MouseButton1Click:Connect(function()
     espOn = not espOn
     espBtn.Text = espOn and "ESP: ON" or "ESP: OFF"
 
-    for _,plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer and plr.Character then
+    for _,p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
             if espOn then
-                local h = Instance.new("Highlight", plr.Character)
+                local h = Instance.new("Highlight", p.Character)
                 h.FillColor = Color3.fromRGB(255,0,0)
+                h.OutlineColor = Color3.new(1,1,1)
             else
-                for _,v in pairs(plr.Character:GetChildren()) do
+                for _,v in pairs(p.Character:GetChildren()) do
                     if v:IsA("Highlight") then v:Destroy() end
                 end
             end
