@@ -1,4 +1,5 @@
--- dedulia Hub | No Key | PC + Mobile
+-- dedulia Hub | Ultimate | No Key | PC + Mobile
+-- Для репозитория: Dedys31legendhuHub
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -111,8 +112,8 @@ RunService.RenderStepped:Connect(function()
     if not aimbotOn then return end
     local closest, dist = nil, math.huge
     for _,p in pairs(Players:GetPlayers()) do
-        if p ~= LP and p.Character and p.Character:FindFirstChild("Head") then
-            local d = (Camera.CFrame.Position - p.Character.Head.Position).Magnitudeif d < dist then
+        if p ~= LP and p.Character and p.Character:FindFirstChild("Head") thenlocal d = (Camera.CFrame.Position - p.Character.Head.Position).Magnitude
+            if d < dist then
                 dist = d
                 closest = p
             end
